@@ -6,6 +6,10 @@
 
 在 ChatGPT 工作模式选用 **@Personal Health**。模型负责解释，MCP 工具负责读取；桥本身不运行另一个大模型，也不需要额外的 OpenAI/Gemini API 密钥。
 
+### 已实现工具
+
+让 dot 调用 `get_onboarding_guide`，每轮只提出返回的 `next_question`，并在下一轮传入已有回答。趋势优先调用 `get_health_overview`，排错调用 `get_data_status`。
+
 ### 第一次使用
 
 > 我想用健康助手关注自己的记录。先确认连接和最近有数据的日期，然后一次只问我一个问题：我最关心什么、希望多久回顾一次、日常有哪些时间限制。只在本次对话使用我的回答；不要声称已经保存长期记忆或创建监测任务。
@@ -31,6 +35,10 @@
 ## English
 
 Select **@Personal Health** in ChatGPT Work. The model explains the records and MCP tools read them. The bridge does not run another model or require an additional OpenAI/Gemini API key.
+
+### Implemented tool entry points
+
+Ask dot to call `get_onboarding_guide`, show only its `next_question` and pass previous answers on the next call. Prefer `get_health_overview` for trends and `get_data_status` for troubleshooting.
 
 ### First use
 

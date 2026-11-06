@@ -20,4 +20,5 @@ export type Env = {
   FITBIT_CLIENT_SECRET: string;
   REQUEST_CACHE_META?: CacheObservation[];
   REQUEST_ABORT_SIGNAL?: AbortSignal;
+  REQUEST_FAIL_FAST?: boolean;
 };

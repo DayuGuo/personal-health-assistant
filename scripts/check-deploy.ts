@@ -15,6 +15,7 @@ export async function checkDeploy(root = process.cwd()): Promise<void> {
     'privacy/index.html',
     'terms/index.html',
     'visualize/index.html',
+    'start/index.html',
   ]) {
     const html = await readFile(resolve(root, directory, path), 'utf8');
     if (/\{\{[A-Z_]+\}\}/.test(html))

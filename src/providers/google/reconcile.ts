@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { GoogleClient } from './client';
+import { IncompleteDataError } from '../../lib/errors';
 
 // v4 reconcile: GET .../dataPoints:reconcile. We omit `filter` — its member
 // names are type-specific and brittle (probed: sleep/daily-* filters 400),
@@ -15,16 +16,28 @@ export async function reconcile(
   slug: string,
   pageSize: number,
 ): Promise<Array<Record<string, unknown>>> {
-  const points:Array<Record<string,unknown>>=[];
-  const seen=new Set<string>();let token:string|undefined;
-  for(let page=0;page<100;page++){
-    const raw=await client.requestJson(ReconcileResponseSchema,{path:`/v4/users/me/dataTypes/${slug}/dataPoints:reconcile`,query:{pageSize:slug==='sleep'?25:pageSize,pageToken:token,dataSourceFamily:'users/me/dataSourceFamilies/'+(slug.startsWith('daily-')?'google-sources':'google-wearables')}});
-    points.push(...(raw.dataPoints??[]));
-    if(!raw.nextPageToken)return points;
-    if(seen.has(raw.nextPageToken))throw new Error('Repeated pagination token; partial results refused.');
-    seen.add(raw.nextPageToken);token=raw.nextPageToken;
+  const points: Array<Record<string, unknown>> = [];
+  const seen = new Set<string>();
+  let token: string | undefined;
+  for (let page = 0; page < 100; page++) {
+    const raw = await client.requestJson(ReconcileResponseSchema, {
+      path: `/v4/users/me/dataTypes/${slug}/dataPoints:reconcile`,
+      query: {
+        pageSize: slug === 'sleep' ? 25 : pageSize,
+        pageToken: token,
+        dataSourceFamily:
+          'users/me/dataSourceFamilies/' +
+          (slug.startsWith('daily-') ? 'google-sources' : 'google-wearables'),
+      },
+    });
+    points.push(...(raw.dataPoints ?? []));
+    if (!raw.nextPageToken) return points;
+    if (seen.has(raw.nextPageToken))
+      throw new IncompleteDataError('Repeated pagination token; partial results refused.');
+    seen.add(raw.nextPageToken);
+    token = raw.nextPageToken;
   }
-  throw new Error('Pagination limit reached; partial results refused.');
+  throw new IncompleteDataError('Pagination limit reached; partial results refused.');
 }
 
 export function isRecord(v: unknown): v is Record<string, unknown> {

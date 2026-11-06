@@ -22,13 +22,17 @@ Google Health Coach 由 Gemini 支持，首次通过对话了解目标、生活�
 - MCP 指引要求先核对日期、来源、覆盖与新鲜度，再给出结论、证据、不确定性和一个可选下一步。禁止编造恢复评分、诊断，或声称只读工具已保存计划和记忆。
 - 模型继续使用 dot 自身能力；Worker 负责授权、读取和短时缓存，不增加第二套模型服务或模型 API 密钥。
 
-### 后续优先级（设计建议，尚未实现）
+### P1 已在 0.4.0 实现
+
+`get_health_overview`、`get_onboarding_guide`、`get_data_status` 与公开 `/start/` 三步页面已实现，详见 [计算和状态规则](OVERVIEW.md)。旧工具、授权存储和独立每日归档保持兼容。下表中的 P1 已完成；P2/P3 仍为设计建议。
+
+### 优先级与状态
 
 | 优先级 | 功能 | 易用性收益与验收标准 |
 | --- | --- | --- |
-| P1 | 一个健康概览工具 | 合并常用读取，返回最新完整日、7 日摘要、个人历史比较和有效天数。每个结论能追溯到原记录；接口错误和缺失单独展示。统计由可测试代码计算，模型负责解释。 |
-| P1 | 极简首次对话 | 只问关注目标、可用时间和回顾偏好，不索取无关健康细节。没有历史时先说明可做什么。 |
-| P1 | 可见的数据状态 | 明确区分设备记录日期、API 获取时间、缓存命中，以及空记录、过期授权和限流；给出能执行的修复入口。 |
+| P1 已完成 | 一个健康概览工具 | 合并常用读取，返回最新完整日、7 日摘要、个人历史比较和有效天数。每个结论能追溯到原记录；接口错误和缺失单独展示。统计由可测试代码计算，模型负责解释。 |
+| P1 已完成 | 极简首次对话 | 只问关注目标、可用时间和回顾偏好，不索取无关健康细节。没有历史时先说明可做什么。 |
+| P1 已完成 | 可见的数据状态 | 明确区分设备记录日期、API 获取时间、缓存命中，以及空记录、过期授权和限流；给出能执行的修复入口。 |
 | P2 | 用户可编辑的目标与情境 | 提供查看、修改、删除和停用入口；确认后才持久化，与 Google 原始记录分开。不能默默依赖聊天记忆已保存。 |
 | P2 | 用户选择的晨间或周度回顾 | 默认关闭，明确时区、时段、频率和停止方法；通过 dot 支持的任务能力独立配置。每日归档不等于主动 AI 提醒。 |
 | P3 | 有约束的小实验回顾 | 用户自愿选择一个小习惯，按完整日期比较前后记录，说明覆盖、不确定性和混杂因素，不作医学或因果结论。 |
@@ -53,7 +57,11 @@ These sources describe product behavior and parts of the architecture, not compl
 - Server instructions to check record dates, sources, coverage and freshness; explain a finding with evidence, uncertainty and one optional next step. No invented recovery scores, diagnoses or false claims that read-only tools saved plans or memory.
 - Inference stays in dot. The Worker handles authorization, reads and short-lived caching without another model service or API key.
 
-### Proposed next work, not yet implemented
+### P1 shipped in 0.4.0
+
+`get_health_overview`, `get_onboarding_guide`, `get_data_status` and the `/start/` page are implemented. See [calculation and status rules](OVERVIEW.md). Existing tools/grant storage and separate archives remain compatible. Items 1–3 below have shipped; items 4–6 are still proposals.
+
+### Priorities and status
 
 1. **One overview tool:** return a latest-complete-day view, seven-day summary, historical comparison and valid-day coverage. Compute statistics in tested code, retain record provenance and separate missing data from API errors.
 2. **Three-question onboarding:** focus, time constraints and review preference. Explain limited history instead of asking for unnecessary personal detail.

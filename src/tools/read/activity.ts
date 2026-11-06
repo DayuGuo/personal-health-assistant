@@ -22,7 +22,7 @@ export function registerActivityReadTools(
     {
       title: 'Daily activity summary',
       description:
-        'Steps, calories out, distance, heart rate zones (resting + zone minutes), active-minute bucket totals for a single day. Cached for 1 hour. NOTE: values for the current JST day can be unstable until Fitbit finalises aggregation (e.g. negative `sedentaryMinutes`, or a huge `caloriesOut` on the Out of Range zone). Prefer querying a previous day for trending analysis.',
+        'Legacy daily activity summary. Only mapped fields may be available. Cached up to five minutes. Current-day values may be incomplete. Prefer get_health_overview for validated complete-day coverage, missing-data handling, source-aware history comparisons and evidence.',
       inputSchema: {
         date: z.string().describe('YYYY-MM-DD. Omit for today (Europe/London).').optional(),
       },
@@ -87,7 +87,9 @@ export function registerActivityReadTools(
       inputSchema: {
         beforeDate: z
           .string()
-          .describe('YYYY-MM-DD. Returns entries before this date. Defaults to today (Europe/London).')
+          .describe(
+            'YYYY-MM-DD. Returns entries before this date. Defaults to today (Europe/London).',
+          )
           .optional(),
         limit: z
           .number()

@@ -92,6 +92,11 @@ export class GoogleClient {
       }
 
       if (res.status === 429) {
+        if (this.env.REQUEST_FAIL_FAST)
+          throw new FitbitRateLimitError(
+            parseRetryAfter(res.headers.get('Retry-After'), { fallbackSec: 60, maxSec: 3600 }),
+            req.path,
+          );
         const waitSec = parseRetryAfter(res.headers.get('Retry-After'));
         if (attempt < MAX_ATTEMPTS) {
           console.log(`[google] ${method} ${req.path} → 429, sleeping ${waitSec}s before retry`);

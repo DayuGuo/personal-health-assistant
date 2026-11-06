@@ -108,7 +108,7 @@ export const defaultHandler = {
       if (u.pathname === '/health')
         return Response.json({
           status: 'ok',
-          version: '0.3.0',
+          version: '0.4.0',
           mode: 'read-only',
           health_data: 'authenticated access only',
         });

@@ -23,6 +23,7 @@ export async function renderSite(root: string, state: SetupState): Promise<void>
     'privacy/index.html',
     'terms/index.html',
     'visualize/index.html',
+    'start/index.html',
   ]) {
     const path = resolve(target, name);
     const source = await readFile(path, 'utf8');

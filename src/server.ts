@@ -3,12 +3,18 @@ import { z } from 'zod';
 import type { Env } from './env';
 import { GoogleHealthProvider } from './providers/google';
 import { registerAllTools } from './tools';
-export function buildServer(env: Env): McpServer {
+import { registerExperienceTools } from './tools/read/experience';
+import type { HealthProvider } from './providers/types';
+import type { DataStatus } from './lib/data-status';
+export function buildServer(
+  env: Env,
+  options: { provider?: HealthProvider; probe?: () => Promise<DataStatus> } = {},
+): McpServer {
   const server = new McpServer(
-    { name: 'personal-health-assistant', version: '0.3.0' },
+    { name: 'personal-health-assistant', version: '0.4.0' },
     {
       instructions:
-        'Read-only Google Health tools for the configured owner. First check record dates, source and freshness. Missing is not zero; today may be incomplete. For trends compare complete days and identical source families with the owner’s own baseline. Give a short finding, supporting evidence, uncertainty and one optional next step. Do not invent recovery/readiness scores or diagnose. Ask for relevant goals and context before tailoring suggestions. Daily archiving and proactive schedules are optional, separate, and require explicit setup. User context is not stored by this bridge. Never claim that a schedule, memory or data change was saved by a read-only tool.',
+        'Start with get_health_overview for trends, get_data_status for troubleshooting, or get_onboarding_guide for first use. Ask only the returned next_question; carry previous answers in arguments, never claim they were saved. Read-only: no goals, reminders or schedules are created. Cite metric evidence IDs, record dates, source families, coverage and cache/API timestamps. Missing is not zero; use complete days and the same source/method for comparisons. Device sync time is unknown. For last night’s sleep, use get_sleep for its wake date (possibly today); the overview excludes today. Explain one finding with evidence, uncertainty and an optional next step; no diagnosis or invented recovery score. Daily archive and proactive scheduling are separate opt-in capabilities.',
     },
   );
   const original = server.registerTool.bind(server);
@@ -50,7 +56,19 @@ export function buildServer(env: Env): McpServer {
         };
       },
     )) as typeof server.registerTool;
-  registerAllTools(server, new GoogleHealthProvider(env), env);
+  const provider = options.provider ?? new GoogleHealthProvider(env);
+  registerAllTools(server, provider, env);
+  const experienceEnv = {
+    ...env,
+    REQUEST_FAIL_FAST: true,
+    REQUEST_ABORT_SIGNAL: AbortSignal.timeout(45000),
+  };
+  registerExperienceTools(
+    server,
+    options.provider ?? new GoogleHealthProvider(experienceEnv),
+    experienceEnv,
+    options.probe,
+  );
   server.registerTool(
     'get_connection_status',
     {

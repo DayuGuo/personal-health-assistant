@@ -10,6 +10,7 @@
 | --- | --- |
 | `/`、`/privacy/`、`/terms/` | 公开说明和个性化双语政策 |
 | `/visualize/` | 主动选择本地 JSON 的图表，不自动读取 Drive 或上传文件 |
+| `/start/` | 双语三步引导，只在本页生成提示词 |
 | `/health` | 公开运行状态，不表示 Health 授权有效 |
 | `/mcp` | 受 OAuth 保护的 Streamable HTTP，只接受已授权 POST 工具调用 |
 | `/authorize`、`/oauth/token` | MCP 授权与令牌端点 |
@@ -48,6 +49,7 @@ Use `pnpm run setup` to generate configuration. It renders configurable `public/
 
 - Public explanation/policies: `/`, `/privacy/`, `/terms/`.
 - Local JSON viewer: `/visualize/`; no automatic Drive access or uploads.
+- Local-only three-question starter: `/start/`.
 - Runtime status only: `/health`.
 - OAuth-protected Streamable HTTP: `/mcp` (authorized POST calls).
 - MCP authorization/token: `/authorize`, `/oauth/token`.
@@ -64,3 +66,14 @@ Verification has three layers: public HTTPS/pages/protected MCP and matching OAu
 Google Branding uses your homepage, `/privacy/`, `/terms/` and applicable authorized domain. Review generated policies for accuracy. Client secrets belong only in Worker Secrets, never static assets, GitHub, logs or URLs.
 
 Existing Apps Script callback/client/tokens/folder/trigger remain independent and untouched. New daily archives are optional and require separate personal setup/consent.
+
+
+## Upgrade an existing Worker / 升级已有 Worker
+
+Keep the exact Worker name, custom domain, PUBLIC_ORIGIN, OWNER_EMAIL, OAUTH_KV/TOKENS and CACHE namespace IDs and all four Worker Secrets. Do not run the new-install wizard against a legacy deployment, recreate KV, run secret bulk, replace token bundles or reinstall Apps Script. Render the updated policy assets with the same owner and daily-archive setting, then deploy code/assets using the existing configuration. Record the current version first; retain it as a rollback point.
+
+升级时保留同一 Worker、域名、PUBLIC_ORIGIN、OWNER_EMAIL、原 KV 绑定及四项 Worker Secrets。不要运行新装向导、重建 KV、重写密钥或令牌包、重新安装 Apps Script。按原维护者及每日归档设置渲染新版页面后，使用原配置更新代码和资源，先记录旧版本供回滚。
+
+After deployment, verify `/health` version, protected MCP and unchanged secret names; call an old tool through the existing ChatGPT connection before refreshing tool metadata. Refresh the plugin's tool list to discover the three new tools, then test status, overview and guide. No new Google scopes or consent is required by this release. A revoked/invalid existing grant can still require owner action.
+
+部署后核对版本、MCP 保护及密钥名称，先用原 ChatGPT 连接调用旧工具，再刷新插件工具列表并测试三项新能力。本版本不增加 Google 权限，不要求重新授权；若原授权本身已失效则仍需本人处理。

@@ -30,6 +30,14 @@ pnpm run setup
 
 Google 控制台配置、发布状态核对和本人同意不能由终端替代。Production 不等于 Google 审核通过，也不保证授权永久有效。ChatGPT 功能能否使用取决于账户和工作区权限。
 
+### 日常使用：三个入口
+
+- `get_health_overview`：最近 7 个完整日与此前 28 日比较，显示有效天数和证据，不补零。
+- `get_onboarding_guide`：一次一个问题，了解关注方向、回顾时间和偏好；不保存目标或创建提醒。
+- `get_data_status`：不展示健康数值，区分日期、缓存、缺失、授权、权限和接口故障。
+
+公开站点的 `/start/` 提供双语入门表单。详见 [P1 工具和计算规则](docs/OVERVIEW.md)。
+
 ### 每日归档是可选项
 
 - **不安装（默认）**：只使用 dot 按需查询，无需 Apps Script 或 Drive 权限。
@@ -96,6 +104,14 @@ Choose Chinese or English. The wizard:
 6. Writes `.setup/CONNECT.md` with dot connection settings. Personally create, install and connect the ChatGPT plugin, then make one actual tool call.
 
 The terminal cannot replace Google console configuration, publishing-status checks or personal consent. Production is not Google verification or a promise of permanent authorization. ChatGPT account/workspace permissions still apply.
+
+### Three everyday entry points
+
+- `get_health_overview`: seven complete recent days vs the preceding 28, with valid-day coverage/evidence and no gap filling.
+- `get_onboarding_guide`: one question at a time about focus, review time and preference; no saved goals or schedules.
+- `get_data_status`: dates, cache, missing data, consent, permission and API failures without measurements.
+
+The public `/start/` page offers a bilingual starter form. See [P1 tools and calculation rules](docs/OVERVIEW.md).
 
 ### Daily archiving is optional
 
