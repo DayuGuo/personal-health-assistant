@@ -1,4 +1,4 @@
-health.anotherdayu.com {
+health.example.com {
     root * /srv/health-assistant
     encode zstd gzip
     file_server

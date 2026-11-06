@@ -4,75 +4,63 @@
 
 ## 中文
 
-本项目部署到 **Cloudflare Workers**。公开网站与需要授权的 MCP 接口共用 [health.anotherdayu.com](https://health.anotherdayu.com)。
-
-### 路径与作用
+推荐通过 `pnpm run setup` 生成配置。向导把可配置模板 `public/` 渲染到被 Git 忽略的 `.setup/site/`，本地 `wrangler.toml` 指向该目录。邮箱、维护者名称、域名和 Worker 名称不需要修改源码。
 
 | 路径 | 作用 |
 | --- | --- |
-| `/`、`/privacy/`、`/terms/`、`/visualize/` | 公开首页、隐私政策、条款和本地快照查看器 |
-| `/mcp` | 需要授权的 Streamable HTTP MCP 接口 |
-| `/health` | 公开运行状态，仅检查 Worker |
+| `/`、`/privacy/`、`/terms/` | 公开说明和个性化双语政策 |
+| `/visualize/` | 主动选择本地 JSON 的图表，不自动读取 Drive 或上传文件 |
+| `/health` | 公开运行状态，不表示 Health 授权有效 |
+| `/mcp` | 受 OAuth 保护的 Streamable HTTP，只接受已授权 POST 工具调用 |
 | `/authorize`、`/oauth/token` | MCP 授权与令牌端点 |
 | `/login/callback` | Google 本人身份验证回调 |
 
-受保护资源的元数据地址见 `/mcp` 未授权响应（401）的 `WWW-Authenticate` 头。
+受保护资源元数据地址见 `/mcp` 401 响应的 `WWW-Authenticate` 头。OAuth 规范来源从配置的 `PUBLIC_ORIGIN` 派生，不从请求 Host 头推断。
 
-快照查看器只在浏览器内存中处理你主动选择的本地 JSON，不会自动读取 Drive 或上传文件；MCP 查询是另行授权的请求。
+### 部署与验证
 
-### 密钥与域名
+首次向导会确认 Worker 名称未被占用、域名没有已有解析，然后创建资源并部署。自有域名通过 Cloudflare Worker Custom Domain 绑定；`workers.dev` 不创建自定义域名路由。使用者仍应确认对域名的控制和 Google 的实际发布条件。
 
-Google 客户端密钥保存到 Worker Secrets。不要把它们放进公开网站资源、GitHub Actions 日志、CNAME 文件或连接器 URL。KV 命名空间 ID 放在被 Git 忽略的本地 `wrangler.toml`，仓库模板保留占位符。
+完成向导后更新自己的部署：
 
-先检查 `health` 子域名没有冲突记录，再在本地 `wrangler.toml` 顶层加入：
-
-```toml
-routes = [{ pattern = "health.anotherdayu.com", custom_domain = true }]
+```sh
+pnpm typecheck
+pnpm test
+pnpm exec wrangler deploy --dry-run
+pnpm run deploy
 ```
 
-然后运行 `pnpm exec wrangler deploy`。请勿修改主博客或其他子域名。其他人复用时应替换为自己的域名；已有服务占用主机名时，先核实该服务再处理。
+配置和 Secrets 已在本地/Cloudflare 的前提下，最后一条才会更新实际服务。本仓库没有自动 GitHub 部署。`pnpm run deploy` 的预检查会阻止发布未渲染的模板，避免旧配置误覆盖公开政策页。对现有但非向导管理的部署，不要直接运行新装；先保留现有本地配置与站点，使用独立目录试装。
 
-### Google Production 配置地址
+安装验证分三层：
 
-- 首页：[https://health.anotherdayu.com/](https://health.anotherdayu.com/)
-- 隐私政策：[https://health.anotherdayu.com/privacy/](https://health.anotherdayu.com/privacy/)
-- 条款：[https://health.anotherdayu.com/terms/](https://health.anotherdayu.com/terms/)
-- 已授权域名：`anotherdayu.com`
+1. 公开页面、HTTPS、`/mcp` 401 和匹配本人的 OAuth/CIMD 元数据。
+2. 本人 Google 同意、实际刷新令牌、五个 Health 读取接口，仅输出状态。
+3. 本人在 ChatGPT 安装并连接插件，再由 dot 实际调用，核对日期和新鲜度。
 
-原 Apps Script 的 `/usercallback` 回调和客户端独立保留，不要替换为 Worker 的登录回调。自部署时请填写自己控制的域名与相应页面。
+Google Branding 使用自己的站点首页、`/privacy/`、`/terms/` 和适用的授权域名；先阅读生成的政策，确保与自己的实际部署一致。Google 客户端密钥只放 Worker Secrets；不要放进静态文件、GitHub、日志或 URL。
 
-### 参考文档
-
-- [ChatGPT 插件身份验证](https://developers.openai.com/plugins/build/auth)
-- [连接 ChatGPT](https://developers.openai.com/plugins/deploy/connect-chatgpt)
-- [Cloudflare workers-oauth-provider](https://github.com/cloudflare/workers-oauth-provider)
+原 Apps Script 的 `/usercallback`、客户端、令牌、文件夹和定时任务独立保留。向导不会操作现有归档；新归档只是可选扩展，需要本人完成独立安装。
 
 ## English
 
-This project now uses **Cloudflare Workers**, not a Pages-only site. Public policies and the private MCP endpoint share https://health.anotherdayu.com.
+Use `pnpm run setup` to generate configuration. It renders configurable `public/` templates to ignored `.setup/site/`, referenced by local `wrangler.toml`. No source edits are needed for owner email/name, origin or Worker name.
 
-- Public site: `/`, `/privacy/`, `/terms/`, `/visualize/`
-- Private Streamable HTTP: `/mcp`
-- Public status: `/health` (runtime only)
-- MCP authorization: `/authorize`, `/oauth/token`
-- Google identity callback: `/login/callback`
-- Protected resource discovery: read the metadata URL in the `/mcp` 401 WWW-Authenticate header.
+- Public explanation/policies: `/`, `/privacy/`, `/terms/`.
+- Local JSON viewer: `/visualize/`; no automatic Drive access or uploads.
+- Runtime status only: `/health`.
+- OAuth-protected Streamable HTTP: `/mcp` (authorized POST calls).
+- MCP authorization/token: `/authorize`, `/oauth/token`.
+- Google identity callback: `/login/callback`.
 
-The static viewer processes selected local snapshot JSON only in browser memory; it does not automatically access Drive or upload files. MCP tool calls are separate authenticated requests.
+Read the protected-resource metadata URL from `/mcp`'s 401 `WWW-Authenticate` header. The canonical OAuth audience comes from configured `PUBLIC_ORIGIN`, never a request Host header.
 
-Google client secrets belong in Worker Secrets. Never put them in public assets, GitHub Actions logs, a CNAME file or a connector URL. Keep namespace IDs in ignored local wrangler.toml; the committed template contains placeholders.
+The wizard refuses occupied Worker names and resolving custom hostnames before creating resources. Custom origins use Cloudflare Worker Custom Domains; `workers.dev` requires no custom route. Verify domain control and applicable Google publishing requirements yourself.
 
-For custom domain binding, after confirming no conflicting health DNS record exists, add a top-level `routes = [{ pattern = "health.anotherdayu.com", custom_domain = true }]` to local wrangler.toml, then deploy. Do not change the main blog or other subdomains. If the hostname is already used, inspect its actual service before replacing anything.
+After setup, update your deployment with typecheck, tests, a Wrangler dry run, then `pnpm run deploy` (commands above). Only the final command updates the real service and requires existing configuration/Secrets. No automatic GitHub deployment is enabled. The `pnpm run deploy` precheck blocks unrendered templates to prevent accidental replacement of legacy policy pages. Legacy installations should preserve local configuration/site assets and try the wizard in a separate clean directory.
 
-Production OAuth URLs:
-- Home: https://health.anotherdayu.com/
-- Privacy: https://health.anotherdayu.com/privacy/
-- Terms: https://health.anotherdayu.com/terms/
-- Authorized domain: anotherdayu.com
+Verification has three layers: public HTTPS/pages/protected MCP and matching OAuth/CIMD; owner consent plus real token refresh and five status-only Health probes; then personal ChatGPT plugin installation/connection and an actual dot tool call with record dates/freshness.
 
-The Apps Script `/usercallback` URI and its client remain separate and must not be replaced by the Worker login callback.
+Google Branding uses your homepage, `/privacy/`, `/terms/` and applicable authorized domain. Review generated policies for accuracy. Client secrets belong only in Worker Secrets, never static assets, GitHub, logs or URLs.
 
-MCP transport/authentication documentation:
-- https://developers.openai.com/plugins/build/auth
-- https://developers.openai.com/plugins/deploy/connect-chatgpt
-- https://github.com/cloudflare/workers-oauth-provider
+Existing Apps Script callback/client/tokens/folder/trigger remain independent and untouched. New daily archives are optional and require separate personal setup/consent.

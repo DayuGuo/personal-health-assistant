@@ -1,6 +1,6 @@
 {
   "name": "personal-health-assistant",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Private read-only Google Health MCP bridge for ChatGPT dots on Cloudflare Workers",
   "private": true,
   "type": "module",
@@ -12,17 +12,19 @@
   },
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "node --import tsx scripts/deploy.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome format --write .",
-    "setup:health": "tsx scripts/setup-health.ts",
-    "diagnose:health": "tsx scripts/diagnose-health.ts"
+    "setup:health": "node --import tsx scripts/setup-health.ts",
+    "diagnose:health": "node --import tsx scripts/diagnose-health.ts",
+    "setup": "node --import tsx scripts/setup.ts",
+    "setup:plan": "node --import tsx scripts/setup.ts --dry-run"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "1.2.4",

@@ -5,8 +5,19 @@ import { FitbitApiError, FitbitRateLimitError } from '../../lib/errors';
 import { parseRetryAfter, sleep } from '../../lib/rate-limit';
 import { getAccessToken, invalidateAccessToken } from './oauth';
 
-function safeApiReason(text:string):string {
- try { const e=JSON.parse(text).error; const reasons=(e?.details||[]).map((d:{reason?:string})=>d.reason).filter((x:unknown)=>typeof x==='string'&&/^[A-Z_]{1,80}$/.test(x as string));return JSON.stringify({status:/^[A-Z_]+$/.test(e?.status)?e.status:'API_ERROR',reasons}); }catch{return 'API_ERROR';}
+function safeApiReason(text: string): string {
+  try {
+    const e = JSON.parse(text).error;
+    const reasons = (e?.details || [])
+      .map((d: { reason?: string }) => d.reason)
+      .filter((x: unknown) => typeof x === 'string' && /^[A-Z_]{1,80}$/.test(x as string));
+    return JSON.stringify({
+      status: /^[A-Z_]+$/.test(e?.status) ? e.status : 'API_ERROR',
+      reasons,
+    });
+  } catch {
+    return 'API_ERROR';
+  }
 }
 const GOOGLE_API_BASE = 'https://health.googleapis.com';
 
@@ -38,7 +49,8 @@ export class GoogleClient {
 
   async requestText(req: GoogleRequest): Promise<string> {
     const url = new URL(req.path, GOOGLE_API_BASE);
-    if(url.origin!==GOOGLE_API_BASE || !url.pathname.startsWith('/v4/users/me/')) throw new Error('Unsupported API path');
+    if (url.origin !== GOOGLE_API_BASE || !url.pathname.startsWith('/v4/users/me/'))
+      throw new Error('Unsupported API path');
     if (req.query) {
       for (const [k, v] of Object.entries(req.query)) {
         if (v !== undefined && v !== null && v !== '') {
@@ -64,7 +76,12 @@ export class GoogleClient {
       }
 
       const t0 = Date.now();
-      const res = await fetch(url, { method: req.method ?? 'GET', headers, body });
+      const res = await fetch(url, {
+        method: req.method ?? 'GET',
+        headers,
+        body,
+        signal: this.env.REQUEST_ABORT_SIGNAL,
+      });
       const ms = Date.now() - t0;
       const method = req.method ?? 'GET';
 
@@ -86,9 +103,7 @@ export class GoogleClient {
 
       const text = await res.text();
       if (!res.ok) {
-        console.log(
-          `[google] ${method} ${req.path} → ${res.status}`,
-        );
+        console.log(`[google] ${method} ${req.path} → ${res.status}`);
         throw new FitbitApiError(res.status, safeApiReason(text), req.path);
       }
       return text;

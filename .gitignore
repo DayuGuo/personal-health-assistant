@@ -50,3 +50,8 @@ daily_*.csv
 brief_*.md
 live_manifest.json
 sync_status.json
+
+# Installer state, rendered site, connection card and downloaded OAuth clients
+.setup/
+client_secret*.json
+*oauth-client*.json
