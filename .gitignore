@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.env.*
+.clasprc.json
+.clasp.json
+*.pem
+*.key
+snapshot_*.json
+daily_*.csv
+brief_*.md
+live_manifest.json
+sync_status.json
