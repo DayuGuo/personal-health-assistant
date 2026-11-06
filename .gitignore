@@ -1,10 +1,50 @@
-.DS_Store
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+# Each fork has its own KV namespace ids — keep local wrangler.toml out of VCS.
+# wrangler.toml.example is the committed template.
+wrangler.toml
+
+# Environment
 .env
 .env.*
-.clasprc.json
-.clasp.json
-*.pem
-*.key
+!.env.example
+*.local
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json.example
+
+# Local Fitbit token dumps (safety net — must NEVER be committed)
+fitbit-tokens.json
+fitbit-tokens.*.json
+tokens.local.json
+
+# Local Google token dumps (safety net — must NEVER be committed)
+google-tokens.json
+google-tokens.*.json
+
+# Claude-related files are never tracked (project convention)
+CLAUDE.md
+.claude/
+
+.bootstrap-secrets.json
+.dev.vars*
+wrangler.toml
+.wrangler/
+node_modules/
+
 snapshot_*.json
 daily_*.csv
 brief_*.md

@@ -1,49 +1,49 @@
-# Personal Health Assistant
+# Personal Health Assistant — ChatGPT dot bridge
 
-Google Health 只读同步 → 私人 Google Drive → ChatGPT dot 读取结果。
+Private, read-only Google Health MCP bridge on Cloudflare Workers, adapted from [Ring8688/google-health-worker-mcp-V1](https://github.com/Ring8688/google-health-worker-mcp-V1), originally based on [tachibanayu24/fitbit-googlehealth-mcp](https://github.com/tachibanayu24/fitbit-googlehealth-mcp). Upstream MIT copyright is preserved in LICENSE.
 
-网站仅承载应用说明、隐私政策、条款与本地快照图表。每天的健康同步运行在 Google Apps Script；不依赖 VPS，也不需要保持电脑开机。
+## What runs where
 
-## 最简单的部署组合
+- **Cloudflare Worker:** authenticated Streamable HTTP `/mcp`, Google sign-in, public policy pages, local snapshot viewer.
+- **Two KV namespaces:** one for encrypted MCP OAuth records and the owner's Health token bundle; one for short-lived read cache (maximum five minutes). OAUTH_KV and TOKENS bind to the same namespace, with health application keys prefixed `health:`. KV health tokens are accessible to Cloudflare account administrators; do not share these namespaces.
+- **Existing Apps Script:** daily Europe/London approximately 20:00 sync and private Drive archive remain independent. This Worker has no cron and does not modify that trigger or Drive files.
+- **ChatGPT dot:** uses the authenticated MCP plugin to query records on demand. The bridge never gives Google credentials to the model.
 
-1. **Google Apps Script**：复制三个文件，配置独立健康 OAuth 客户端，完成本人授权与首次同步。
-2. **Cloudflare Pages**：连接本仓库，构建命令 `exit 0`，输出目录 `docs`。
-3. **自定义子域名**：在 Pages 添加 `health.anotherdayu.com`，再根据控制台提示配置 DNS CNAME。
-4. **长期授权**：确认公开政策页面可访问，补齐 Google Branding，检查是否可切换 Production；切换后重新授权并验证同步。
-5. **ChatGPT dot**：通过本人连接的 Drive 插件读取 manifest、状态和最新简报。修改同步配置或主动执行同步需要另行授权的工具或维护任务，本仓库尚无远程管理 API。
+## Security changes from upstream
 
-安装健康同步见 [SETUP.md](SETUP.md)。网站托管见 [DEPLOY.md](DEPLOY.md)。
+- No secret in a URL and no Anthropic-only IP gate. Standard OAuth 2.1 using Cloudflare's provider library, PKCE, protected resource metadata and ChatGPT CIMD support.
+- Only the configured owner's verified Google email may connect; other accounts fail closed. Login client (`openid email`) and Health client (three `googlehealth.*.readonly` scopes) are separate.
+- Client consent and browser-bound state are handled by the provider library. Only ChatGPT client metadata and callback hosts are accepted. This personal deployment is not an unrestricted multi-user service.
+- Write/delete/preset tools and tools needing extra profile/settings/nutrition scopes are not registered. The provider mapping files are inherited; their presence does not grant permissions.
+- London calendar defaults, real date validation, maximum 90-day ranges, fixed source families, pagination with truncation refusal, cache freshness in tool results, and redacted API errors.
+- Bootstrap writes credentials directly with stdin/temporary mode-0600 files, then deletes temporary token files; it never prints tokens, authorization codes or secret-bearing commands. The ignored local `.bootstrap-secrets.json` holds the four client configuration values until provisioning finishes. Keep it owner-readable and delete it after verification.
 
-## 目录
+## Minimal setup
 
-```text
-apps-script/   三个完整 Apps Script 文件，版本 2026-11-06.3
-docs/          网站根目录，无框架、无需构建
-  privacy/     隐私政策
-  terms/       使用条款
-  visualize/   仅在浏览器内读取本人选择的快照
-deploy/       可选 VPS 的 Nginx/Caddy 示例
-```
+1. Install Node.js 24+ and pnpm. Run `pnpm install --frozen-lockfile`.
+2. Copy `wrangler.toml.example` to ignored `wrangler.toml`; set PUBLIC_ORIGIN, OWNER_EMAIL, Worker name and the canonical origin in `src/index.ts` for your own deployment.
+3. Create two KV namespaces. Bind the authorization namespace as both OAUTH_KV and TOKENS, and the cache namespace as CACHE. Configure the IDs locally, never copy another person's storage IDs.
+4. In Google Cloud enable Health API. Keep the three scopes: activity_and_fitness.readonly, health_metrics_and_measurements.readonly, sleep.readonly. Do not combine Drive/script scopes into Health tokens.
+5. Create two **Web application** clients: login callback `https://YOUR_HOST/login/callback`; dedicated Health callback `http://127.0.0.1:8787/oauth/callback`. Set `.bootstrap-secrets.json` to a JSON object containing LOGIN_CLIENT_ID, LOGIN_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET. Do not commit this file.
+6. Deploy with `pnpm exec wrangler deploy`, bind the custom domain, verify public policy pages, fill Google Branding, and check Production eligibility. Production is not verification and tokens are never guaranteed permanent.
+7. Run `pnpm run setup:health`. Open `http://127.0.0.1:8787/auth` on that same computer; complete Google consent. The local script verifies health.identity HTTP 200, writes Worker Secrets and the Health bundle safely, then closes. It requests only the three read scopes above.
+8. In ChatGPT Plugins → Add custom MCP server: name Personal Health Assistant, endpoint `https://YOUR_HOST/mcp`, choose OAuth/CIMD where offered, create as a plugin, approve client consent and sign in using the configured owner. Enable the plugin for your dot. Account/workspace eligibility still applies.
+9. Test an actual tool call from dot, including empty/error cases, record dates and freshness. A public `/health` 200 proves only that the Worker is running, not that Google Health or dot linking works.
 
-## 本地预览
+Google may show an unverified-app warning for personal use; review it yourself. Publishing Google OAuth does not mean Google approved the application. Existing Testing-mode grants should be replaced by a fresh Production authorization, including the separate Apps Script grant if that archive is retained.
 
-```bash
-python3 -m http.server 8080 --directory docs
-```
+## Repository layout
 
-打开 http://localhost:8080/。图表页面选择 v2 snapshot JSON，不接收 manifest。按指标与来源分开显示，不补零，不跨缺失日连线，不计算医疗结论。文件不上传服务器、不保存在浏览器持久存储中。
+`src/`, `scripts/`, `test/`: bridge code and validation. `public/`: website assets. `apps-script/`: retained daily-sync source. `wrangler.toml.example`: portable deployment template. No automatic GitHub deployment is enabled in this repository.
 
-## 配置边界
+## Validation
 
-- 网站 HTML 中的域名、维护者姓名和联系邮箱是当前个人部署的公开说明。其他人复用时必须改成自己的真实配置，不能沿用本维护者身份。
-- 健康客户端 secret、访问令牌、刷新令牌、授权码均不进入源码或网站。
-- 健康权限仅使用三项 googlehealth.*.readonly；Apps Script 仅使用 external_request、scriptapp 和 drive.file。
-- 每次同步写入新一代文件并更新 manifest；状态为 partial 时应核对被拒绝的数据类型，不能当成全部更新。
-- 每日目标时间 Europe/London 约 20:00（±15 分钟），不要承诺精确到分钟。
-- Testing 健康授权七天限制不能用自动刷新延长；Production 也不保证授权永不被撤销。
+`pnpm typecheck`, `pnpm test`, `pnpm exec wrangler deploy --dry-run`.
 
-## 当前交付状态
+`pnpm exec tsx scripts/diagnose-health.ts` is an owner-only local diagnostic. It reads the remote token into memory and prints endpoint status only. It does not modify tokens; rerun setup if a fresh token is needed. Do not run Wrangler commands that print the token bundle directly.
 
-此前个人账户已验证独立健康授权、两项诊断 HTTP 200、实际同步 success 与一个每日触发器；这不代表任何其他账户已可用，也不代表本网站已部署或 OAuth 已切换 Production。
+## Boundaries
 
-本仓库当前为私有整理版，无自动部署 workflow，未选择开源许可证。正式公开前请选定许可证、审阅 Google Health API 的当前访问条件、检查维护者信息，并确认仓库无私人数据或凭据。公开源码不等于公开健康数据。
+Only existing records accessible to the approved scopes can be returned. Missing records are not zero; current-day activity can be incomplete. Source/method differences matter. Statistics are not diagnoses. Broad claims of "all body data" or "permanent authorization" are not made.
+
+There is no public Google Health endpoint, no unauthenticated health dashboard, no new health writes, no change to the old Takeout history, and no promise that connecting this server automatically installs a dot monitoring schedule. Google API availability, host quotas, account permissions and upstream schemas must be checked for each deployment.

@@ -1,0 +1,45 @@
+{
+  "name": "personal-health-assistant",
+  "version": "0.2.0",
+  "description": "Private read-only Google Health MCP bridge for ChatGPT dots on Cloudflare Workers",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Yuto Tachibana",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DayuGuo/personal-health-assistant.git"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "setup:health": "tsx scripts/setup-health.ts",
+    "diagnose:health": "tsx scripts/diagnose-health.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "1.2.4",
+    "@hono/mcp": "^0.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "hono": "^4.7.0",
+    "jose": "^6.2.15",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2",
+    "@cloudflare/workers-types": "^4.20260421.1",
+    "@types/node": "^22",
+    "tsx": "^4",
+    "typescript": "^5.7",
+    "vitest": "^2",
+    "wrangler": "^4"
+  },
+  "packageManager": "pnpm@10.30.0+sha512.2b5753de015d480eeb88f5b5b61e0051f05b4301808a82ec8b840c9d2adf7748eb352c83f5c1593ca703ff1017295bc3fdd3119abb9686efc96b9fcb18200937"
+}

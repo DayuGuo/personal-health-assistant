@@ -1,0 +1,24 @@
+name = "personal-health-assistant"
+main = "src/index.ts"
+compatibility_date = "2026-04-28"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+workers_dev = true
+[vars]
+PUBLIC_ORIGIN = "https://health.anotherdayu.com"
+OWNER_EMAIL = "guozydayu@gmail.com"
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "REPLACE_AUTH_NAMESPACE"
+[[kv_namespaces]]
+binding = "TOKENS"
+id = "REPLACE_AUTH_NAMESPACE"
+[[kv_namespaces]]
+binding = "CACHE"
+id = "REPLACE_CACHE_NAMESPACE"
+# OAUTH_KV and TOKENS share one namespace; application keys start health:.
+# Secrets: LOGIN_CLIENT_ID, LOGIN_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET.
+# Never configure a shared secret in a URL or expose a public health API.
