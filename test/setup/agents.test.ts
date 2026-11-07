@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { configureAgents } from '../../scripts/setup-agents';
 const dirs: string[] = [];
 async function fixture() {
@@ -62,4 +62,24 @@ it('refuses older workers and updates only the agent policy on a matching deploy
   );
   expect(run).toHaveBeenCalledTimes(1);
   expect(run).toHaveBeenCalledWith(['secret', 'put', 'MCP_CLIENT_POLICY'], '[]');
+});
+
+it('refuses the unverified Muse template before any network access or policy change', async () => {
+  const run = vi.fn(),
+    fetcher = vi.fn();
+  await expect(
+    configureAgents(
+      [
+        '--file',
+        resolve('deploy/muse-clients.template.json'),
+        '--apply',
+        '--origin',
+        'https://health.example.org',
+      ],
+      run,
+      fetcher,
+    ),
+  ).rejects.toThrow(/Invalid MCP_CLIENT_POLICY/);
+  expect(fetcher).not.toHaveBeenCalled();
+  expect(run).not.toHaveBeenCalled();
 });

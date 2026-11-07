@@ -16,6 +16,10 @@
 
 Google Health、MCP 连接和某个平台的上架审批是三件不同的事。新代理不会得到 Google 刷新令牌；它通过自己的 MCP 令牌读取同一维护者的数据。
 
+当前按**预兼容**交付：无需持有 Grok Bot 或 Muse 账户。通用协议、拒绝规则和合成授权流程已有测试；不能据此认定厂商应用已经实测可用。线上保持默认 ChatGPT-only，Grok 预设不会自行启用。
+
+Muse 的待填模板是 `deploy/muse-clients.template.json`，其中回调为故意无效的占位符，原样应用会在本地校验失败，不会写入 Cloudflare。确认真实参数后填写；若 Muse 使用 CIMD，则按下文 CIMD 格式填写客户端 ID，而非凭名称猜测官方 URL。Grok Bot 若采用不同客户端，同样等待真实参数。
+
 ### 启用 Grok 网页客户端
 
 先部署 0.4.2，再预览并应用：
@@ -83,7 +87,7 @@ Grok Bot 官方说明可在 Connect apps 中连接，或请求 Bot 添加远程 
 
 One Worker can serve multiple explicitly enabled agents using the same read-only Health tools and Google grant. Each agent completes its own MCP consent. ChatGPT remains enabled by default; other clients are disabled until configured. Daily archiving is independent.
 
-Grok's web/console preset uses its published CIMD document. This does not establish Grok Bot compatibility: obtain the Bot's actual client ID and redirects. Meta Muse's consumer entry and exact OAuth parameters also need account-level verification. No listing, vendor approval or end-to-end success is implied by protocol tests.
+Grok's web/console preset uses its published CIMD document. This does not establish Grok Bot compatibility: obtain the Bot's actual client ID and redirects. Meta Muse's consumer entry and exact OAuth parameters also need account-level verification. No listing, vendor approval or end-to-end success is implied by protocol tests. This is a pre-compatibility release: no Grok Bot or Muse account is required to prepare it. Live extra clients remain disabled. The Muse template at `deploy/muse-clients.template.json` deliberately contains an invalid placeholder; applying it unchanged is rejected locally before network access or Cloudflare writes. Fill actual vendor callbacks only when available; do not guess them.
 
 Deploy 0.4.2, preview `pnpm run setup:agents -- --file deploy/grok-clients.json`, then add `--apply --origin https://YOUR_HOST` to update the matching Worker's policy through stdin. `--config` selects a local Wrangler file. The command does not modify Google credentials or archive triggers.
 

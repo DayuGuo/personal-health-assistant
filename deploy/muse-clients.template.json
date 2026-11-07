@@ -1,0 +1,7 @@
+[
+  {
+    "mode": "registration",
+    "name": "Meta Muse (pending verification)",
+    "redirectUris": ["REPLACE_WITH_OFFICIAL_MUSE_REDIRECT_URI"]
+  }
+]
