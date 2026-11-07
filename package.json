@@ -1,7 +1,7 @@
 {
   "name": "personal-health-assistant",
-  "version": "0.4.1",
-  "description": "Private read-only Google Health MCP bridge for ChatGPT dots on Cloudflare Workers",
+  "version": "0.4.2",
+  "description": "Private read-only Google Health MCP bridge for ChatGPT and explicitly enabled agents on Cloudflare Workers",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -21,6 +21,7 @@
     "setup:health": "node --import tsx scripts/setup-health.ts",
     "diagnose:health": "node --import tsx scripts/diagnose-health.ts",
     "setup": "node --import tsx scripts/setup.ts",
+    "setup:agents": "node --import tsx scripts/setup-agents.ts",
     "setup:plan": "node --import tsx scripts/setup.ts --dry-run"
   },
   "engines": {

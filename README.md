@@ -38,6 +38,10 @@ Google 控制台配置、发布状态核对和本人同意不能由终端替代�
 
 公开站点的 `/start/` 提供双语入门表单。详见 [P1 工具和计算规则](docs/OVERVIEW.md)。
 
+### 其他代理客户端
+
+0.4.2 提供默认关闭的额外客户端白名单，支持精确 CIMD 和受限动态注册。Grok 网页预设来自官方元数据；Grok Bot、Meta Muse 仍需核对各自客户端参数并完成账号内实测。保留现有 ChatGPT 授权与每日同步。[兼容性、配置和验证边界](docs/AGENT-COMPATIBILITY.md)。
+
 ### 每日归档是可选项
 
 - **不安装（默认）**：只使用 dot 按需查询，无需 Apps Script 或 Drive 权限。
@@ -112,6 +116,10 @@ The terminal cannot replace Google console configuration, publishing-status chec
 - `get_data_status`: dates, cache, missing data, consent, permission and API failures without measurements.
 
 The public `/start/` page offers a bilingual starter form. See [P1 tools and calculation rules](docs/OVERVIEW.md).
+
+### Additional agent clients
+
+Version 0.4.2 adds opt-in exact CIMD and restricted dynamic-registration rules. The Grok web preset uses official metadata; Grok Bot and Meta Muse still need their own client settings and account-level tests. Existing ChatGPT grants and daily sync are preserved. See [configuration and verification boundaries](docs/AGENT-COMPATIBILITY.md).
 
 ### Daily archiving is optional
 

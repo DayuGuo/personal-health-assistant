@@ -11,7 +11,7 @@ export function buildServer(
   options: { provider?: HealthProvider; probe?: () => Promise<DataStatus> } = {},
 ): McpServer {
   const server = new McpServer(
-    { name: 'personal-health-assistant', version: '0.4.1' },
+    { name: 'personal-health-assistant', version: '0.4.2' },
     {
       instructions:
         'Start with get_health_overview for trends, get_data_status for troubleshooting, or get_onboarding_guide for first use. Ask only the returned next_question; carry previous answers in arguments, never claim they were saved. Read-only: no goals, reminders or schedules are created. Cite metric evidence IDs, record dates, source families, coverage and cache/API timestamps. Missing is not zero; use complete days and the same source/method for comparisons. Device sync time is unknown. For last night’s sleep, use get_sleep for its wake date (possibly today); the overview excludes today. Explain one finding with evidence, uncertainty and an optional next step; no diagnosis or invented recovery score. Daily archive and proactive scheduling are separate opt-in capabilities.',

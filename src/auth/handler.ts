@@ -3,7 +3,8 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { Env } from '../env';
 const keys = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 export const escape = (s: string) => s.replace(/[&<>"']/g, (c) => '&#' + c.charCodeAt(0) + ';');
-import { isChatGPTClient, verifyOwner as owner } from './security';
+import { verifyOwner as owner } from './security';
+import { allowedClient } from './clients';
 export const defaultHandler = {
   async fetch(req: Request, env: Env): Promise<Response> {
     const u = new URL(req.url),
@@ -11,8 +12,11 @@ export const defaultHandler = {
     try {
       if (u.pathname === '/authorize' && req.method === 'GET') {
         const request = await oauth.parseAuthRequest(req);
-        if (!isChatGPTClient(request.clientId, request.redirectUri))
-          return new Response('Only the configured ChatGPT client is supported.', { status: 400 });
+        const agent = await allowedClient(request.clientId, request.redirectUri, env);
+        if (!agent)
+          return new Response('This MCP client and callback have not been enabled by the owner.', {
+            status: 400,
+          });
         if (request.scope.some((s) => !['health:read', 'offline_access'].includes(s)))
           return new Response('Unsupported scope', { status: 400 });
         const details = await oauth.describeConsent(request),
@@ -20,7 +24,7 @@ export const defaultHandler = {
         consent.headers.set('Content-Type', 'text/html; charset=utf-8');
         consent.headers.set('Referrer-Policy', 'no-referrer');
         return new Response(
-          `<!doctype html><meta charset="utf-8"><title>连接个人健康助手 / Connect Personal Health</title><h1>允许 ChatGPT 读取你的健康数据？<br>Allow ChatGPT to read your health data?</h1><p>请求客户端 / Client: ${escape(details.clientName)}；客户端域名 / Client domain: ${escape(details.clientDomain || '未验证')}。</p><p>回调目的地 / Redirect host: ${escape(details.redirectHost)}。只允许维护者本人 Google 账户登录。将读取活动、睡眠及健康测量；不会写入健康数据，也不会修改每日同步。</p><p>Only the configured owner may sign in. Read-only access covers activity, sleep and health measurements. Health records and optional daily archiving are not changed.</p><form method="post" action="/authorize"><input type="hidden" name="handle" value="${escape(consent.handle)}"><button name="decision" value="approve">同意并使用 Google 验证本人身份 / Agree and verify with Google</button><button name="decision" value="deny">取消 / Cancel</button></form><p><a href="/privacy/">隐私政策 / Privacy</a></p>`,
+          `<!doctype html><meta charset="utf-8"><title>连接个人健康助手 / Connect Personal Health</title><h1>允许 ${escape(agent)} 读取你的健康数据？<br>Allow ${escape(agent)} to read your health data?</h1><p>请求客户端 / Client: ${escape(details.clientName)}；客户端域名 / Client domain: ${escape(details.clientDomain || '未验证')}。</p><p>Client ID: ${escape(request.clientId)}<br>回调地址 / Redirect URI: ${escape(request.redirectUri)}。</p><p>只允许维护者本人 Google 账户登录。将读取活动、睡眠及健康测量；不会写入健康数据，也不会修改每日同步。查询结果将交给你授权的客户端及其服务提供方处理。</p><p>Only the configured owner may sign in. Read-only access covers activity, sleep and health measurements. Results are shared with the client you authorize and its service provider. Health records and optional daily archiving are not changed.</p><form method="post" action="/authorize"><input type="hidden" name="handle" value="${escape(consent.handle)}"><button name="decision" value="approve">同意并使用 Google 验证本人身份 / Agree and verify with Google</button><button name="decision" value="deny">取消 / Cancel</button></form><p><a href="/privacy/">隐私政策 / Privacy</a></p>`,
           { headers: consent.headers },
         );
       }
@@ -34,7 +38,7 @@ export const defaultHandler = {
         const approved = await oauth.approveConsent(req, handle, {
           scope: ['health:read', 'offline_access'],
         });
-        if (!isChatGPTClient(approved.request.clientId, approved.request.redirectUri))
+        if (!(await allowedClient(approved.request.clientId, approved.request.redirectUri, env)))
           return new Response('Unsupported client', { status: 400 });
         const nonce = crypto.randomUUID(),
           verifier = crypto.randomUUID() + crypto.randomUUID();
@@ -67,6 +71,8 @@ export const defaultHandler = {
       }
       if (u.pathname === '/login/callback' && req.method === 'GET') {
         const tx = await oauth.finishUpstream<{ nonce: string; verifier: string }>(req);
+        if (!(await allowedClient(tx.request.clientId, tx.request.redirectUri, env)))
+          throw new Error('Client configuration changed; restart authorization');
         if (u.searchParams.has('error')) {
           tx.headers.set('Location', authorizationErrorRedirect(tx.request, 'access_denied'));
           return new Response(null, { status: 302, headers: tx.headers });
@@ -108,7 +114,7 @@ export const defaultHandler = {
       if (u.pathname === '/health')
         return Response.json({
           status: 'ok',
-          version: '0.4.1',
+          version: '0.4.2',
           mode: 'read-only',
           health_data: 'authenticated access only',
         });
@@ -119,7 +125,7 @@ export const defaultHandler = {
       if (e instanceof AuthorizationError && e.redirectTo)
         return Response.redirect(e.redirectTo, 302);
       return new Response(
-        'Authorization could not be completed. Restart the connection from ChatGPT; only the owner may connect.',
+        'Authorization could not be completed. Restart the connection from your agent; only the owner may connect.',
         {
           status: 400,
           headers: {

@@ -16,6 +16,7 @@ export type Env = {
   LOGIN_CLIENT_SECRET: string;
   OWNER_EMAIL: string;
   PUBLIC_ORIGIN: string;
+  MCP_CLIENT_POLICY?: string;
   FITBIT_CLIENT_ID: string;
   FITBIT_CLIENT_SECRET: string;
   REQUEST_CACHE_META?: CacheObservation[];

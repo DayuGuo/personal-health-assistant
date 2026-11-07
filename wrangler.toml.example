@@ -7,6 +7,8 @@ workers_dev = true
 [vars]
 PUBLIC_ORIGIN = "https://health.example.com"
 OWNER_EMAIL = "owner@example.com"
+# Extra agents are disabled by default. Use pnpm run setup:agents after deployment.
+# The optional MCP_CLIENT_POLICY secret contains exact CIMD/callback or DCR rules.
 [assets]
 directory = ".setup/site"
 binding = "ASSETS"

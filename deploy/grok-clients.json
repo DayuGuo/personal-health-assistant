@@ -1,0 +1,11 @@
+[
+  {
+    "mode": "cimd",
+    "name": "Grok",
+    "clientId": "https://grok.com/oauth/mcp-client.json",
+    "redirectUris": [
+      "https://grok.com/connectors-oauth-exchange-code/",
+      "https://console.x.ai/connectors-oauth-exchange-code/"
+    ]
+  }
+]

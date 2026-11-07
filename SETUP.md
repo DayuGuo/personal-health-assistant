@@ -40,6 +40,10 @@ Production 是发布状态，不等于已审核。不得绕过适用的 Google �
 
 查看 [OpenAI 官方说明](https://developers.openai.com/api/docs/guides/custom-mcp-server#how-to-use)。账户和工作区限制仍然适用。仅 CLI 成功不等于 ChatGPT 端到端调用已验证。
 
+### 其他 AI 代理
+
+默认仍只允许 ChatGPT。部署 0.4.2 后可用 `pnpm run setup:agents` 预览／应用精确客户端规则；Grok Bot、Meta Muse 和其他代理的接入与验证边界见 [代理兼容性](docs/AGENT-COMPATIBILITY.md)。每个代理独立同意，不重做 Google Health 授权或每日归档。
+
 ### 恢复与故障
 
 - 中断后重跑同一命令，保留同一个目录。状态存于 `.setup/state.json`，不含客户端密钥或健康记录；不要提交生成目录。
@@ -77,6 +81,10 @@ Production is publishing status, not verification. Follow applicable Google requ
 ### Install in dot
 
 Open [ChatGPT Plugins](https://chatgpt.com/plugins) → Add custom MCP server. Enter `https://YOUR_HOST/mcp`, OAuth, CIMD, token endpoint authentication `none`, and base scopes `health:read` and `offline_access` on separate lines. Create and install the plugin, connect as the configured owner, then select `@Personal Health` in dot and read a complete day. See [official OpenAI guidance](https://developers.openai.com/api/docs/guides/custom-mcp-server#how-to-use). Account/workspace restrictions apply. CLI success does not establish a successful ChatGPT end-to-end call.
+
+### Other agents
+
+ChatGPT-only remains the default. After deploying 0.4.2, use `pnpm run setup:agents` to preview/apply exact client rules. See [agent compatibility](docs/AGENT-COMPATIBILITY.md) for Grok Bot, Meta Muse and verification boundaries. Each agent consents independently without replacing Google Health authorization or daily archiving.
 
 ### Resume and troubleshoot
 
