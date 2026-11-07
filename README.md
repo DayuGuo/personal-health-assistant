@@ -6,6 +6,16 @@
 
 把自己的 Google Health 记录接入 **ChatGPT dot（工作模式）**。每个人部署自己的 Cloudflare Worker，在自己的 dot 中安装 Personal Health 自定义 MCP 插件。活动、睡眠和健康指标按需只读查询；原始凭据不会交给模型。
 
+### 新手：让 skill 带着安装
+
+可以把 [Personal Health 安装助手](.agents/skills/personal-health-setup/SKILL.md) 安装到 Codex，然后说：
+
+```text
+使用 $personal-health-setup 帮我配置健康助手，每次只引导我做一步；先识别已有部署，保留现有授权和每日同步。
+```
+
+它会操作现有向导，遇到登录和本人同意时交给你，分别核验部署、授权和插件读取。[两步安装 skill／新手说明](docs/INSTALL-WITH-SKILL.md)。
+
 ### 从这里开始
 
 准备 Node.js 24+、pnpm、Cloudflare 账户，以及有权访问 Google Health API 和相应记录的 Google 账户。使用 macOS 或 Linux；Windows 请使用 WSL。准备一个未使用、由你控制的子域名，或完整的 Worker `workers.dev` 地址。
@@ -84,6 +94,16 @@ pnpm exec wrangler deploy --dry-run
 ## English
 
 Connect your Google Health records to **ChatGPT dot (Work mode)**. Each owner deploys their own Cloudflare Worker and installs a Personal Health custom MCP plugin in their own dot. Activity, sleep and health measurements are read on demand; Google credentials are never provided to the model.
+
+### Beginner route: let a skill guide setup
+
+Install [Personal Health Setup](.agents/skills/personal-health-setup/SKILL.md) in Codex, then ask:
+
+```text
+Use $personal-health-setup to set up my health assistant one step at a time. Check for an existing deployment first and preserve grants and daily sync.
+```
+
+It operates the existing wizard, hands personal login/consent to you, and verifies deployment, authorization and actual connector reads separately. [Skill installation and beginner guide](docs/INSTALL-WITH-SKILL.md).
 
 ### Start here
 

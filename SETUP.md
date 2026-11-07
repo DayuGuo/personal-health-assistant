@@ -4,6 +4,8 @@
 
 ## 中文
 
+新手可先使用 [Personal Health 安装 skill](docs/INSTALL-WITH-SKILL.md)，让 agent 引导并操作以下流程。已有部署会先识别，不会因安装 skill 而重装。
+
 入口是 `pnpm run setup`，可加 `--lang zh` 或 `--lang en`。Node.js 24+，macOS/Linux 或 WSL；在仓库根目录运行。`pnpm setup` 是 pnpm 自身命令。
 
 ### 自动完成与本人步骤
@@ -64,6 +66,8 @@ Production 是发布状态，不等于已审核。不得绕过适用的 Google �
 原每日同步始终独立。新归档选项仅导出代码和指南，需要额外 Apps Script/Drive 同意。保留现有选项不读取、更换或重新安装原触发器。
 
 ## English
+
+Beginners can use the [Personal Health setup skill](docs/INSTALL-WITH-SKILL.md) to guide this workflow. Existing deployments are identified before changes; installing a skill does not reinstall the service.
 
 Run `pnpm run setup`, optionally with `--lang zh` or `--lang en`, from the repository root. Requires Node.js 24+ on macOS/Linux or WSL. `pnpm setup` belongs to pnpm itself.
 
