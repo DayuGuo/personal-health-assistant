@@ -17,11 +17,15 @@ export async function getCachedDetailed<T>(
   let cacheAvailable = true;
   try {
     const hit = await env.CACHE.get<{ data: T; fetchedAt: string; expiresAt: string }>(k, 'json');
+    const now = Date.now(),
+      fetchedAt = hit ? Date.parse(hit.fetchedAt) : NaN,
+      expiresAt = hit ? Date.parse(hit.expiresAt) : NaN;
     if (
       hit &&
       hit.data !== undefined &&
-      Date.parse(hit.fetchedAt) <= Date.now() &&
-      Date.parse(hit.expiresAt) > Date.now()
+      fetchedAt <= now &&
+      now - fetchedAt < ttl * 1000 &&
+      expiresAt > now
     )
       return {
         data: hit.data,

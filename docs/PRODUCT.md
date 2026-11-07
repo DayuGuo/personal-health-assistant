@@ -24,20 +24,14 @@ Google Health Coach 由 Gemini 支持，首次通过对话了解目标、生活�
 
 ### P1 已在 0.4.0 实现
 
-`get_health_overview`、`get_onboarding_guide`、`get_data_status` 与公开 `/start/` 三步页面已实现，详见 [计算和状态规则](OVERVIEW.md)。旧工具、授权存储和独立每日归档保持兼容。下表中的 P1 已完成；P2/P3 仍为设计建议。
+`get_health_overview`、`get_onboarding_guide`、`get_data_status` 与公开 `/start/` 三步页面已实现，详见 [计算和状态规则](OVERVIEW.md)。旧工具、授权存储和独立每日归档保持兼容。当前范围固定为现有 P1 和安装部署流程，只进行准确性、稳定性、兼容性与易用性维护。P2/P3 不继续实施。
 
-### 优先级与状态
+### 当前维护范围
 
-| 优先级 | 功能 | 易用性收益与验收标准 |
-| --- | --- | --- |
-| P1 已完成 | 一个健康概览工具 | 合并常用读取，返回最新完整日、7 日摘要、个人历史比较和有效天数。每个结论能追溯到原记录；接口错误和缺失单独展示。统计由可测试代码计算，模型负责解释。 |
-| P1 已完成 | 极简首次对话 | 只问关注目标、可用时间和回顾偏好，不索取无关健康细节。没有历史时先说明可做什么。 |
-| P1 已完成 | 可见的数据状态 | 明确区分设备记录日期、API 获取时间、缓存命中，以及空记录、过期授权和限流；给出能执行的修复入口。 |
-| P2 | 用户可编辑的目标与情境 | 提供查看、修改、删除和停用入口；确认后才持久化，与 Google 原始记录分开。不能默默依赖聊天记忆已保存。 |
-| P2 | 用户选择的晨间或周度回顾 | 默认关闭，明确时区、时段、频率和停止方法；通过 dot 支持的任务能力独立配置。每日归档不等于主动 AI 提醒。 |
-| P3 | 有约束的小实验回顾 | 用户自愿选择一个小习惯，按完整日期比较前后记录，说明覆盖、不确定性和混杂因素，不作医学或因果结论。 |
-
-建议先做好“今天怎么看、这周有什么变化、数据是否可靠”三个入口，再考虑更多指标。不要合成看似精确但未经验证的统一恢复分数；不要用模板建议冒充个性化分析。
+- 保证概览统计、日期与来源解释准确，缺失数据清晰可见。
+- 维护只读授权、缓存时效、错误提示、安装与升级兼容性。
+- 完善三步引导和双语说明，保留现有授权与独立每日同步。
+- 本阶段不增加持久化目标/情境、主动回顾提醒或习惯实验。
 
 ## English
 
@@ -59,15 +53,11 @@ These sources describe product behavior and parts of the architecture, not compl
 
 ### P1 shipped in 0.4.0
 
-`get_health_overview`, `get_onboarding_guide`, `get_data_status` and the `/start/` page are implemented. See [calculation and status rules](OVERVIEW.md). Existing tools/grant storage and separate archives remain compatible. Items 1–3 below have shipped; items 4–6 are still proposals.
+`get_health_overview`, `get_onboarding_guide`, `get_data_status` and the `/start/` page are implemented. See [calculation and status rules](OVERVIEW.md). Existing tools/grant storage and separate archives remain compatible. The scope is fixed to the existing P1 tools and installation/deployment flow, with accuracy, reliability, compatibility and usability maintenance. P2/P3 implementation is discontinued.
 
-### Priorities and status
+### Current maintenance scope
 
-1. **One overview tool:** return a latest-complete-day view, seven-day summary, historical comparison and valid-day coverage. Compute statistics in tested code, retain record provenance and separate missing data from API errors.
-2. **Three-question onboarding:** focus, time constraints and review preference. Explain limited history instead of asking for unnecessary personal detail.
-3. **Clear data status:** distinguish record date, API fetch time and cache age; separate empty records, expired grants and rate limits with actionable recovery paths.
-4. **Editable personal context:** view, edit, delete and disable explicit saved goals separately from raw Google records. Persist only after confirmation.
-5. **Opt-in morning or weekly reviews:** configure through supported dot task capabilities with timezone, timing, frequency and a stop control. A daily archive is not an AI notification schedule.
-6. **Small voluntary habit experiments:** compare complete dates with coverage and uncertainty, noting confounders without causal or medical conclusions.
-
-Prioritize three entry points: understanding today, reviewing the week and knowing whether data is reliable. Avoid unvalidated composite readiness scores and generic advice presented as individualized analysis.
+- Accurate statistics, dates, source explanations and visible missing data.
+- Read-only authorization, cache freshness, actionable errors and installation/upgrade compatibility.
+- Clear three-step onboarding and bilingual documentation, preserving existing grants and the independent daily archive.
+- Persistent goals/context, proactive review reminders and habit experiments are outside this phase.

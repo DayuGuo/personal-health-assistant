@@ -60,4 +60,14 @@ document.getElementById('clear-guide').addEventListener('click', () => {
   show();
 });
 form.addEventListener('submit', (event) => event.preventDefault());
+function invalidatePrompt() {
+  const generated = prompt.value !== '';
+  prompt.value = '';
+  result.hidden = true;
+  if (generated)
+    notice.textContent =
+      '选项已更改，请重新生成提示词。Preferences changed; generate a new prompt.';
+}
+form.addEventListener('change', invalidatePrompt);
+document.getElementById('language').addEventListener('change', invalidatePrompt);
 show();

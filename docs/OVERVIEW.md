@@ -26,6 +26,8 @@
 
 历史 end_date 会单独显示为 requested_end_date；latest_complete_calendar_day 仍是当前伦敦日历的昨天。若查询昨晚刚结束的睡眠，应使用 get_sleep 并明确醒来日期（可能是今天），不要把概览窗口误当成昨晚。
 
+数值通常保留两位小数；极小非零结果保留三位有效数字，避免误显示成零。比较判断使用未舍入的均值。
+
 ### 来源和睡眠边界
 
 步数来自 `google-wearables` 的 dailyRollUp；睡眠来自同系列 reconcile。静息心率、HRV 和 SpO2 来自 `google-sources` 的相应每日 reconcile。只在同一指标、同一来源系列与方法内部比较，不声称来自同一台物理设备。
@@ -71,6 +73,8 @@ Code computes means, minima/maxima, valid-day counts and comparisons. `observed_
 Comparisons require at least 4/7 recent and 14/28 baseline days. These are coverage gates, not clinical thresholds. No percentage is returned for a zero baseline. Window `evidence_ids` reference metric/date entries in `records`, not raw Google resource IDs. Conflicting daily values are excluded; identical duplicates are deduplicated.
 
 Historical end dates are reported separately as requested_end_date; latest_complete_calendar_day remains yesterday in London. For the just-completed night, use get_sleep with its wake date (possibly today), rather than treating the overview window as last night.
+
+Values normally use two decimal places; very small nonzero results retain three significant digits. Comparison eligibility uses unrounded means.
 
 ### Sources and sleep
 

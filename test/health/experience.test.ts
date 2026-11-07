@@ -71,6 +71,25 @@ afterEach(() => {
 });
 
 describe('deterministic complete-day summaries', () => {
+  it('keeps small positive baselines distinct from zero when comparing', () => {
+    const w = overviewWindow(end);
+    const records = normalizeRecords(
+      'fixture',
+      days().map((date) => ({ date, value: date >= w.recent_start ? 0.008 : 0.004 })),
+      w.start,
+      w.end,
+      (n) => n > 0,
+    ).records;
+    const summary = summarize(records, w);
+    expect(summary.baseline.mean).toBe(0.004);
+    expect(summary.recent.mean).toBe(0.008);
+    expect(summary.comparison).toMatchObject({
+      eligible: true,
+      reason: 'ready',
+      difference: 0.004,
+      percent_change: 100,
+    });
+  });
   it('uses a non-overlapping 7/28-day window and exact per-metric evidence', async () => {
     const result = await getOverview(fakeProvider(), createMockEnv(), undefined, ready);
     expect(OverviewSchema.safeParse(result).success).toBe(true);
@@ -202,6 +221,36 @@ describe('deterministic complete-day summaries', () => {
 });
 
 describe('availability, freshness and recovery states', () => {
+  it('rejects old cache data even when its stored expiry is incorrectly far in the future', async () => {
+    const env = createMockEnv();
+    await env.CACHE.put(
+      'health-cache:v2:old-envelope',
+      JSON.stringify({
+        data: 'old',
+        fetchedAt: new Date(Date.now() - 301000).toISOString(),
+        expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      }),
+    );
+    const fetcher = vi.fn(async () => 'fresh');
+    const result = await getCachedDetailed(env, 'old-envelope', fetcher);
+    expect(result.data).toBe('fresh');
+    expect(result.freshness.cache_hit).toBe(false);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+  it('respects a shorter requested cache lifetime when reading an existing envelope', async () => {
+    const env = createMockEnv();
+    await env.CACHE.put(
+      'health-cache:v2:short-ttl',
+      JSON.stringify({
+        data: 'old',
+        fetchedAt: new Date(Date.now() - 61000).toISOString(),
+        expiresAt: new Date(Date.now() + 200000).toISOString(),
+      }),
+    );
+    const fetcher = vi.fn(async () => 'fresh');
+    expect((await getCachedDetailed(env, 'short-ttl', fetcher, { ttlSec: 60 })).data).toBe('fresh');
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it('uses an existing token bundle and preserves it on a temporary refresh failure', async () => {
     const saved = JSON.stringify({
       accessToken: 'synthetic-expired',

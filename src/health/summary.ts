@@ -143,7 +143,8 @@ export function sleepRecords(
       .map(([date, reason]) => ({ date, reason })),
   };
 }
-const round = (n: number) => Number(n.toFixed(2));
+const round = (n: number) =>
+  n !== 0 && Math.abs(n) < 0.01 ? Number(n.toPrecision(3)) : Number(n.toFixed(2));
 const mean = (rows: DailyRecord[]) => rows.reduce((sum, r) => sum + r.value / rows.length, 0);
 export const WindowStatsSchema = z.object({
   start: z.string(),
@@ -202,14 +203,14 @@ export function summarize(
 ) {
   const recent = stats(records, window.recent_start, window.end, unavailable, totals),
     baseline = stats(records, window.start, window.baseline_end, unavailable, totals);
+  const a = mean(records.filter((r) => r.date >= window.recent_start && r.date <= window.end)),
+    b = mean(records.filter((r) => r.date >= window.start && r.date <= window.baseline_end));
   let reason: z.infer<typeof ComparisonSchema>['reason'] = 'ready';
   if (unavailable) reason = 'unavailable';
   else if (recent.valid_days! < 4) reason = 'insufficient_recent';
   else if (baseline.valid_days! < 14) reason = 'insufficient_baseline';
-  else if (baseline.mean === 0) reason = 'baseline_zero';
+  else if (b === 0) reason = 'baseline_zero';
   const eligible = reason === 'ready' || reason === 'baseline_zero';
-  const a = mean(records.filter((r) => r.date >= window.recent_start && r.date <= window.end)),
-    b = mean(records.filter((r) => r.date >= window.start && r.date <= window.baseline_end));
   const percent = ((a - b) / b) * 100;
   return {
     recent,
